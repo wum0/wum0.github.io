@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="linux 0.12 的 setup.s 模块部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="setup.S 模块">
+<meta property="og:url" content="http://wuhash.com/p/240e616d.html">
+<meta property="og:site_name" content="伍默的博客">
+<meta property="og:description" content="linux 0.12 的 setup.s 模块部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/setup%E6%89%A7%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%9A%84%E7%8A%B6%E6%80%81.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/jmp%E8%87%B3%E5%9C%B0%E5%9D%800x00%E5%A4%84.png">
+<meta property="article:published_time" content="2020-12-29T05:45:34.000Z">
+<meta property="article:modified_time" content="2024-09-01T17:39:09.976Z">
+<meta property="article:author" content="伍默">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://data-1256314339.file.myqcloud.com/image/setup%E6%89%A7%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%9A%84%E7%8A%B6%E6%80%81.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>setup.S 模块</title><meta name="robots" content="noindex">
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="伍默的博客" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://wuhash.com/p/240e616d.html"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://wuhash.com/p/240e616d.html&text=setup.S 模块"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://wuhash.com/p/240e616d.html&is_video=false&description=setup.S 模块"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=setup.S 模块&body=Check out this article: http://wuhash.com/p/240e616d.html"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://wuhash.com/p/240e616d.html&name=setup.S 模块&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://wuhash.com/p/240e616d.html&t=setup.S 模块"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E4%B8%AA%E5%9D%91"><span class="toc-number">1.</span> <span class="toc-text">挖个坑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#setup-S-%E7%A8%8B%E5%BA%8F"><span class="toc-number">2.</span> <span class="toc-text">setup.S 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">小结</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        setup.S 模块
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">伍默</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-12-29T05:45:34.000Z" itemprop="datePublished">2020-12-29</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>如果直接看上一篇比较懵，其实很正常。</p>
+<p>本身使用的汇编语法是 AS 86汇编 ，虽然和 Intel 语法很相似，但是指令上阅读还是很难受的。</p>
+<p>我读的时候都是一遍对照着  Bochs 的反汇编 一遍看源码，偶尔还查查指令，大致理解了这段代码的意思。</p>
+<p>如果想对这段代码有一个真实的认识，建议  Bochs 调试一遍即可。</p>
+<h2 id="挖个坑"><a href="#挖个坑" class="headerlink" title="挖个坑"></a>挖个坑</h2><p>由于 Linux 0.12 的内核镜像 和根文件系统 相互独立，如果想在硬盘上引导系统就会出现这样一个问题，根文件系统和内核镜像文件不能共存。</p>
+<blockquote>
+<p>Bochs 的配置中  启动盘是软盘 指向 Linux 0.12 镜像，硬盘是 根文件系统。</p>
+</blockquote>
+<p>作者 赵炯 给出了两种方法：</p>
+<ul>
+<li>多个分区。内核镜像放在主分区，根文件系统放在另一个分区中。</li>
+<li>内核镜像和根文件系统放在同一个分区，内核镜像放在开始的一些扇区中，根文件系统从指定的扇区开始存放。</li>
+</ul>
+<p>两种希望最后能够摸索出来。</p>
+<h2 id="setup-S-程序"><a href="#setup-S-程序" class="headerlink" title="setup.S 程序"></a>setup.S 程序</h2><p><code>setup.S</code> 的主要作用是利用 BIOS 中断从设备中提取内核运行所运行的机器系统数据，机器系统数据被加载到内存 0x9000:0x0000 ~ 0x9000:0x01FC，即原来原来的<code> bootsect</code> 只有2字节没有被覆盖。只能感叹，内存的使用规划明确，使用率极高。<code>bootsect</code>执行结束，执行<code>setup</code>就立刻将器数据覆盖。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#断点在 setup.s 中即可</span></span><br><span class="line">b 0x9000:0x200 </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line">	mov	ax,#INITSEG		! this is done in bootsect already, but...</span><br><span class="line">						</span><br><span class="line">	mov	ds,ax</span><br><span class="line">	#DS &#x3D; 0x9000</span><br><span class="line">! Get memory size (extended mem, kB) </span><br><span class="line">	mov	ah,#0x88</span><br><span class="line">	int	0x15</span><br><span class="line">	mov	[2],ax</span><br><span class="line">	#使用 0x15 中断的 0x88 功能  获取连续内存大小</span><br><span class="line">	#实测Bochs 中 AX 7c00  ,Bochs分配的32MB内存，7c00正好是剩余的31MB内存</span><br><span class="line">! check for EGA&#x2F;VGA and some config parameters </span><br><span class="line">	mov	ah,#0x12</span><br><span class="line">	mov	bl,#0x10</span><br><span class="line">	int	0x10</span><br><span class="line">	mov	[8],ax</span><br><span class="line">	mov	[10],bx</span><br><span class="line">	mov	[12],cx</span><br><span class="line">	; 检测屏幕当前行列值。若显示卡是VGA卡，则请求用户选择显示行列值</span><br><span class="line">	mov	ax,#0x5019  ; 预设行列值(ah &#x3D; 80列，al &#x3D; 25行)</span><br><span class="line">	cmp	bl,#0x10 </span><br><span class="line">	je	novga</span><br><span class="line">	call	chsvga</span><br><span class="line">	</span><br><span class="line">	#中断0x10 的0x12 功能，是显示器的配置中断</span><br><span class="line">	#子功能号读取配置信息</span><br><span class="line">	#将配置信息写入 0x9000:0x8 ~ 0x9000:0xC 部分</span><br><span class="line">novga:	</span><br><span class="line">	mov	[14],ax	</span><br><span class="line"></span><br><span class="line">	mov	ah,#0x03	! read cursor pos</span><br><span class="line">	xor	bh,bh</span><br><span class="line">	int	0x10		! save it in known place, con_init fetches</span><br><span class="line">	mov	[0],dx		! it from 0x90000.</span><br><span class="line">	#中断0x10 的 0x3 号功能</span><br><span class="line">	#获取光标的位置（DH&#x3D;行  DL&#x3D;列)</span><br><span class="line">	</span><br><span class="line">! Get video-card data:</span><br><span class="line">	mov	ah,#0x0f</span><br><span class="line">	int	0x10</span><br><span class="line">	mov	[4],bx		! bh &#x3D; display page</span><br><span class="line">	mov	[6],ax		! al &#x3D; video mode, ah &#x3D; window width</span><br><span class="line">	#获取当前显示模式</span><br><span class="line">	#AL&#x3D;显示模式    AL&#x3D;窗口？</span><br><span class="line">	#BH&#x3D;页码   </span><br><span class="line"></span><br><span class="line">! Get hd0 data</span><br><span class="line">	mov	ax,#0x0000</span><br><span class="line">	mov	ds,ax</span><br><span class="line">	lds	si,[4*0x41]			</span><br><span class="line">	mov	ax,#INITSEG</span><br><span class="line">	mov	es,ax</span><br><span class="line">	mov	di,#0x0080			</span><br><span class="line">	mov	cx,#0x10</span><br><span class="line">	rep</span><br><span class="line">	movsb</span><br><span class="line">	</span><br><span class="line">	#中断向量 0x41 处的值其实是硬盘参数表的偏移地址和段地址</span><br><span class="line">	# ds:si&#x3D;(0x0000:0x41*4):(0x:0000:0x41*4+2) #希望这样看能够看懂</span><br><span class="line">	# 复制硬盘参数表到 0x9000:0x80  硬盘参数表一共10字节</span><br><span class="line"></span><br><span class="line">! Get hd1 data</span><br><span class="line">	mov	ax,#0x0000</span><br><span class="line">	mov	ds,ax</span><br><span class="line">	lds	si,[4*0x46]			</span><br><span class="line">	mov	ax,#INITSEG</span><br><span class="line">	mov	es,ax</span><br><span class="line">	mov	di,#0x0090			</span><br><span class="line">	mov	cx,#0x10</span><br><span class="line">	rep</span><br><span class="line">	movsb</span><br><span class="line">	</span><br><span class="line">	#和上面类似（查文档说为DOS 中断向量）</span><br><span class="line">	#复制第二块硬盘的硬盘参数表到 0x9000:0x80  </span><br><span class="line">! Check that there IS a hd1 :-)</span><br><span class="line"></span><br><span class="line">	mov	ax,#0x01500</span><br><span class="line">	mov	dl,#0x81</span><br><span class="line">	int	0x13</span><br><span class="line">	jc	no_disk1</span><br><span class="line">	cmp	ah,#3</span><br><span class="line">	je	is_disk1		; 是硬盘吗?(类型 &#x3D; 3?).</span><br><span class="line">	#使用 0x13 中断的0x15 功能，读取磁盘类型</span><br><span class="line">	#如果操作失败说明(CF &#x3D; 1) 说明没有第二块硬盘，jmp 至no_disk1</span><br><span class="line">no_disk1:</span><br><span class="line">	mov	ax,#INITSEG</span><br><span class="line">	mov	es,ax</span><br><span class="line">	mov	di,#0x0090</span><br><span class="line">	mov	cx,#0x10</span><br><span class="line">	mov	ax,#0x00</span><br><span class="line">	rep</span><br><span class="line">	stosb</span><br><span class="line">	#AL&#x3D;0x00</span><br><span class="line">	#es:di &#x3D; 0x9000:0x90</span><br><span class="line">	#换成 intel 语法是这样  rep stosb byte ptr es:[di], al</span><br><span class="line">	#也就是从0x00 覆盖 es:di 所指的内存</span><br><span class="line">	#这里的作用为，如果没有第二块硬盘，就用零填充，即清空第二块硬盘的参数表。</span><br><span class="line">is_disk1:</span><br></pre></td></tr></table></figure>
+
+<p>从这里开始，就开始为进入<strong>保护模式</strong>做准备。</p>
+<blockquote>
+<p>如果不熟悉保护模式，看这部分可能会吃力。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">! now we want to move to protected mode ...</span><br><span class="line"></span><br><span class="line">	cli			! no interrupts allowed !		</span><br><span class="line">	#后面的部分会覆盖实模式下的中断向量，所以不允许可屏蔽中断的发生</span><br><span class="line">! first we move the system to it&#39;s rightful place</span><br><span class="line"></span><br><span class="line">	mov	ax,#0x0000</span><br><span class="line">	cld					! &#39;direction&#39; &#x3D; 0, movs moves forward</span><br><span class="line">do_move:</span><br><span class="line">	mov	es,ax			! destination segment </span><br><span class="line">	add	ax,#0x1000</span><br><span class="line">	cmp	ax,#0x9000		</span><br><span class="line">	jz	end_move 		</span><br><span class="line">	mov	ds,ax			</span><br><span class="line">	sub	di,di</span><br><span class="line">	sub	si,si</span><br><span class="line">	mov cx,#0x8000 		; 移动0x8000个字</span><br><span class="line">	rep</span><br><span class="line">	movsw</span><br><span class="line">	jmp	do_move</span><br><span class="line">	#es:di  一开始为 0x00:0x00</span><br><span class="line">	#ds:si  一开始为 0x1000:0x00</span><br><span class="line">	#0x1000:0x00  ~ 0x9000:0x0000  这段内容是什么，其实就是之前的 system 模块</span><br><span class="line">	#为什么是0x1000:0x00  ~ 0x9000:0x0000， 这段空间共 512KB </span><br><span class="line">	#因为当时规划 system 部分 512KB 足够使用了</span><br><span class="line">	#实际上在前面的 system 加载过程中，仅使用到了 0x1000:0x00 ~ 0x4000:0x00 部分。</span><br><span class="line">	</span><br><span class="line">	#回到这段代码</span><br><span class="line">	#这段代码实际上将 system 模块从 0x1000:0x000 整体移动至 0x0000:0x00 开始的地方</span><br><span class="line">	#注意：实际上这里覆盖了实模式下的中断向量表部分，所以在此之前进行了可屏蔽中断的设置</span><br><span class="line">	#为什么每次移动了0x8000 个字  </span><br><span class="line">	#0x1000:0x0000  ~ 0x2000:0x0000 之间有0x10000 字节</span><br><span class="line">	#1个字为2字节  0x10000 字节  &#x3D; 0x8000 字</span><br></pre></td></tr></table></figure>
+
+<p>这段代码执行后，内存中<code>bootsect</code>、<code>setup</code>、<code>system</code>的内存分布如下，这里引用 作者赵炯的图，以便对此刻的内存有一个直观的认识：</p>
+<p><img src="https://data-1256314339.file.myqcloud.com/image/setup%E6%89%A7%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%9A%84%E7%8A%B6%E6%80%81.png"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">! then we load the segment descriptors</span><br><span class="line"></span><br><span class="line">end_move:</span><br><span class="line">	mov	ax,#SETUPSEG	! right, forgot this at first. didn&#39;t work :-)</span><br><span class="line">	mov	ds,ax</span><br><span class="line">	lidt	idt_48		! load idt with 0,0					 </span><br><span class="line">	lgdt	gdt_48		! load gdt with whatever appropriate </span><br><span class="line">	</span><br><span class="line">	#SETUPSEG 实际上是 0x9020</span><br><span class="line">	#ds&#x3D; 0x9020  实际上指向的是 setup 开始的地址</span><br><span class="line">	#使用 lidt   加载 IDT （中断描述符表）到IDT 寄存器</span><br><span class="line">	#使用  lgdt  加载 GDT（全局描述符表）到GDT 寄存器</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">idt_48:</span><br><span class="line">	.word	0			! idt limit&#x3D;0	</span><br><span class="line">	.word	0,0			! idt base&#x3D;0L	</span><br><span class="line">	#共6字节   </span><br><span class="line">	#前两个字节指定 GDT 的 段界限（limit)</span><br><span class="line">	#后4个字节指定  GDT 的 段基地址(Base)</span><br><span class="line">	#这里都是0，0 </span><br><span class="line">	#是因为 进入保护模式之前必须设置 IDT ，虽然 IDT 里啥页没有</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">gdt_48:</span><br><span class="line">	.word	0x800		! gdt limit&#x3D;2048, 256 GDT entries 	</span><br><span class="line">						</span><br><span class="line">	.word	512+gdt,0x9	! gdt base &#x3D; 0X9xxxx </span><br><span class="line">						; （线性地址空间）基地址：0x90200 + gdt</span><br><span class="line">	#limit 为0x800 每个描述符占8个字节，即可以设置 256个全局描述符</span><br><span class="line">	#这里的 gdt 也是个标号</span><br><span class="line">	#base的高字部分为 0x09</span><br><span class="line">	#低字部分为 512 +gdt</span><br><span class="line">	#为什么这样设置？因为 标号 gdt 表示从 gdt 到 setup文件开头的偏移</span><br><span class="line">	#此时setup 被加载到内存位置为 0x90200</span><br><span class="line">	#也就是说标号 gdt 在内存中的地址应为 0x90200 + gdt </span><br><span class="line">	#即高字为  0x09 ，低字为 0x200 +gdt  &#x3D; 512 + gdt</span><br><span class="line">gdt:</span><br><span class="line">	.word	0,0,0,0		! dummy	</span><br><span class="line">	#处理器要求索引为0 的全局描述符为 空</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	.word	0x07FF		! 8Mb - limit&#x3D;2047 (2048*4096&#x3D;8Mb)</span><br><span class="line">	.word	0x0000		! base address&#x3D;0</span><br><span class="line">	.word	0x9A00		! code read&#x2F;exec		; 代码段为只读，可执行</span><br><span class="line">	.word	0x00C0		! granularity&#x3D;4096, 386 ; 颗粒度4K，32位</span><br><span class="line">	#段基地址(base)为 0x0000 0000</span><br><span class="line">	#段界限(limit)为 0x0 07ff </span><br><span class="line">	#粒度(Granularity) 为 1 ,即实际使用的段界限为 0x7ff* 0x1000 + 0xfff &#x3D; 0x7F FFFE</span><br><span class="line">	#这段内存有多长？大概是差 2字节就是8MB ，这里说8MB 也没错</span><br><span class="line">	#TYPE 为 1010  可执行、可读的代码段</span><br><span class="line"></span><br><span class="line">	.word	0x07FF		! 8Mb - limit&#x3D;2047 (2048*4096&#x3D;8Mb)</span><br><span class="line">	.word	0x0000		! base address&#x3D;0</span><br><span class="line">	.word	0x9200		! data read&#x2F;write		</span><br><span class="line">	.word	0x00C0		! granularity&#x3D;4096, 386	</span><br><span class="line">	#段基地址(base)为 0x0000 0000</span><br><span class="line">	#段界限(limit)为 0x0 07ff </span><br><span class="line">	#粒度(Granularity) 为 1 ,即实际使用的段界限为 0x7ff* 0x1000 + 0xfff &#x3D; 0x7F FFFE</span><br><span class="line">	#这段内存有多长？大概是差 2字节就是8MB ，这里说8MB 也没错</span><br><span class="line">	#TYPE 为 0010  可读、可写的数据段</span><br></pre></td></tr></table></figure>
+
+<p>接着开启A20 地址线：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">! that was painless, now we enable A20</span><br><span class="line"></span><br><span class="line">	call	empty_8042</span><br><span class="line">	mov	al,#0xD1		! command write </span><br><span class="line">	out	#0x64,al 		</span><br><span class="line">	call	empty_8042</span><br><span class="line">	mov	al,#0xDF		! A20 on</span><br><span class="line">	out	#0x60,al</span><br><span class="line">	call	empty_8042</span><br><span class="line">	#这里使用键盘控制器（8042芯片）来处理 Gate</span><br><span class="line">	#从而开启 A20 Gate</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>关于A20 地址线的问题，实模式下只能寻址1MB 内存，内存地址为 0x0 0000 ~ 0xF FFFF，进行A20屏蔽之后，对第21根地址线的处理特殊化，使得运算结果恒为0，使得地址<strong>回绕无效</strong>，从而能访问1MB以上的内存。</p>
+</blockquote>
+<p>后面一部分是对8259A 进行编程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">mov	al,#0x11		! initialization sequence</span><br><span class="line">out	#0x20,al		! send it to 8259A-1</span><br><span class="line">.word	0x00eb,0x00eb		! jmp $+2, jmp $+2 	; $ 表示当前指令的地址，</span><br><span class="line">out	#0xA0,al		! and to 8259A-2</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">mov	al,#0x20		! start of hardware int&#39;s (0x20)</span><br><span class="line">out	#0x21,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">mov	al,#0x28		! start of hardware int&#39;s 2 (0x28)</span><br><span class="line">out	#0xA1,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">mov	al,#0x04		! 8259-1 is master</span><br><span class="line">out	#0x21,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">mov	al,#0x02		! 8259-2 is slave</span><br><span class="line">out	#0xA1,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">mov	al,#0x01		! 8086 mode for both</span><br><span class="line">out	#0x21,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">out	#0xA1,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">mov	al,#0xFF		! mask off all interrupts for now</span><br><span class="line">out	#0x21,al</span><br><span class="line">.word	0x00eb,0x00eb</span><br><span class="line">out	#0xA1,al</span><br><span class="line"></span><br><span class="line">#.word 0x00eb ,0x00eb 是  jmp $+2的机器码;)</span><br><span class="line">#暂时不知道这么做的原因？可能是向增加占用的空间？</span><br><span class="line"></span><br><span class="line">#略过这部分，大致理解为 对 8259A 芯片（中断控制器）进行设置</span><br><span class="line">#修改中断控制器，使得 IRQ0x00 ~IRQ0X0f 对应的中断号为 0x20 ~0x2F</span><br><span class="line">#为什么要修改中断控制器中对应的中断号？</span><br><span class="line">#因为后面要自定义  0x00 ~0x1F 的中断向量</span><br><span class="line">#最终效果是屏蔽掉8259A 主芯片和 从芯片的所有中断请求。</span><br></pre></td></tr></table></figure>
+
+<p>进入保护模式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mov	ax,#0x0001	! protected mode (PE) bit</span><br><span class="line">lmsw	ax		! This is it!				</span><br><span class="line">jmpi	0,8		! jmp offset 0 of segment 8 (cs)</span><br><span class="line"></span><br><span class="line">#lmsw指令 将 AX 加载到CR0寄存器，AX 的值仅位0 为 1</span><br><span class="line">#即加载之后CR0 的位0 为1，处理器切换到保护模式</span><br><span class="line">#注意  jmpi	0,8	 执行时，处理器已经处于保护模式了</span><br><span class="line">#索引号为8 ，偏移地址为0 </span><br><span class="line">#索引号为8 即为GDT 中的第3个描述符，代码段描述符</span><br><span class="line">#段基地址为0x0000 0000  ,偏移为 0x0000 </span><br><span class="line">#最后jmp 只 0x0000 0000  处</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://data-1256314339.file.myqcloud.com/image/jmp%E8%87%B3%E5%9C%B0%E5%9D%800x00%E5%A4%84.png"></p>
+<p><code>0x0000 0000</code>处存放的实际上是 <code>system</code>模块，而<code>system</code>模块一开始的部分是<code>head</code>模块，我想这也是它为什么叫 <code>head</code>的原因。</p>
+<p>为什么<code>system</code>模块的一开始是<code>head</code>？</p>
+<p>最后这里我产生了几个疑问？为什么<code>模块</code>的一开始是<code>head</code>部分，前面我说<code>system</code>模块是 0 磁头 0 磁面 6 扇区的位置，对应的镜像文件，也就是第6个512字节的部分，但是为什么能将<code>system</code>模块控制在这个部分?目前 猜测和<code>build</code>部分有关。</p>
+<p>使用<code>make -n</code>查看 <code>make</code>过程中执行的指令，发现<code>head</code>相关的指令有两条：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#makefile 中的执行指令</span></span><br><span class="line">as --32  -o boot/head.o boot/head.s</span><br><span class="line"><span class="comment">#head.s 中使用的 AT&amp;T 汇编 ，使用的编译器为 AS</span></span><br><span class="line"><span class="comment">#指定生成了的32位的代码</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">ld -m elf_i386  -M -x -Ttext 0 -e startup_32 boot/head.o init/main.o \</span><br><span class="line">kernel/kernel.o mm/mm.o fs/fs.o \</span><br><span class="line">kernel/blk_drv/blk_drv.a kernel/chr_drv/chr_drv.a \</span><br><span class="line">kernel/math/math.a \</span><br><span class="line">lib/lib.a \</span><br><span class="line">-o tools/system &gt; System.map</span><br><span class="line"><span class="comment"># -m </span></span><br><span class="line"><span class="comment"># -M </span></span><br><span class="line"><span class="comment"># -Ttext 0</span></span><br><span class="line"><span class="comment"># -e startup_32</span></span><br></pre></td></tr></table></figure>
+
+<p>我觉得需要理解链接这个过程做了什么才能理解<code>linus</code>本人是如何精确的安排代码到镜像文件中。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>总结下 <code>setup</code>做了什么：</p>
+<ul>
+<li>初始化系统的相关参数，放在<code>0x9000:0x0000 ~ 0x9000:0x01FC</code>,覆盖前面已经使用过了的<code>bootsect</code>；</li>
+<li>移动<code>system</code>模块到<code>0x0000:0x0000</code>开始的位置；</li>
+<li>加载 IDT 寄存器、加载GDT 寄存器；</li>
+<li>开启 A20 gate （使得能够访问1MB以上的内存）；</li>
+<li>重编程 8259A 芯片（为自定义中断向量做准备）；</li>
+<li>进入保护模式；</li>
+</ul>
+<p>注意：此时的GDT 在 0x9000:0x2000 处加载的 <code>setup</code>模块部分。</p>
+<!-- flag of hidden posts -->
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E4%B8%AA%E5%9D%91"><span class="toc-number">1.</span> <span class="toc-text">挖个坑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#setup-S-%E7%A8%8B%E5%BA%8F"><span class="toc-number">2.</span> <span class="toc-text">setup.S 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">小结</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://wuhash.com/p/240e616d.html"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://wuhash.com/p/240e616d.html&text=setup.S 模块"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://wuhash.com/p/240e616d.html&is_video=false&description=setup.S 模块"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=setup.S 模块&body=Check out this article: http://wuhash.com/p/240e616d.html"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://wuhash.com/p/240e616d.html&title=setup.S 模块"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://wuhash.com/p/240e616d.html&name=setup.S 模块&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://wuhash.com/p/240e616d.html&t=setup.S 模块"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    伍默
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0bb641a53e8b4867bcd35363aa4eab9b"}'></script>
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

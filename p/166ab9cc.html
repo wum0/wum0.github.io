@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="linux 0.12 的head 模块 部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="head 模块">
+<meta property="og:url" content="http://wuhash.com/p/166ab9cc.html">
+<meta property="og:site_name" content="伍默的博客">
+<meta property="og:description" content="linux 0.12 的head 模块 部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/head%E4%B8%AD%E8%AE%BE%E7%BD%AEIDT%E4%B9%8B%E5%90%8E.png">
+<meta property="og:image" content="https://data-1256314339.cos.ap-shanghai.myqcloud.com/image/使用bochs查看页目录表和页表.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90-1.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90-2.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90-3.png">
+<meta property="article:published_time" content="2021-01-07T16:34:13.000Z">
+<meta property="article:modified_time" content="2024-09-01T17:39:09.974Z">
+<meta property="article:author" content="伍默">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://data-1256314339.file.myqcloud.com/image/head%E4%B8%AD%E8%AE%BE%E7%BD%AEIDT%E4%B9%8B%E5%90%8E.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>head 模块</title><meta name="robots" content="noindex">
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="伍默的博客" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://wuhash.com/p/166ab9cc.html"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://wuhash.com/p/166ab9cc.html&text=head 模块"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://wuhash.com/p/166ab9cc.html&is_video=false&description=head 模块"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=head 模块&body=Check out this article: http://wuhash.com/p/166ab9cc.html"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://wuhash.com/p/166ab9cc.html&name=head 模块&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://wuhash.com/p/166ab9cc.html&t=head 模块"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#head-s"><span class="toc-number">1.</span> <span class="toc-text">head.s</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E6%B1%87%E7%BC%96%E6%8C%87%E4%BB%A4%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="toc-number">2.</span> <span class="toc-text">一些汇编指令的解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">小结</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        head 模块
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">伍默</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-01-07T16:34:13.000Z" itemprop="datePublished">2021-01-08</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>再次解释，如果你没了解过保护模式，后续的一些名词和概念你可能不知所以然。</p>
+<p>从这里开始，后面所使用的汇编都是 32 bit 的 AT&amp;T 汇编</p>
+<p>如果有兴趣了解 AT&amp;T 汇编语法，请参考 <a target="_blank" rel="noopener" href="http://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html">x86 Assembly Guide</a></p>
+<p>我没有找到比较好的文档，如果你知道，请推荐给我。</p>
+<p>以下汇编注释，都是笔者遇到不懂，进行查阅并注释，并未非常详细的进行注释。</p>
+<p>我的书写顺序可能有点奇怪，不是按照代码的编写顺序来完成的，而是按照代码的执行顺序来的。</p>
+</blockquote>
+<h2 id="head-s"><a href="#head-s" class="headerlink" title="head.s"></a>head.s</h2><p> <code>head</code>的源码为<code>boot/head.s </code>文件。</p>
+<p>查看源码中可配合反汇编提高效率：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">as --32  -o boot/head.o boot/head.s</span><br><span class="line">objdump -m i386 -d boot/head.o</span><br><span class="line"><span class="comment">#如果需要配合注释  可使用  as -g 选项 ，objdump -S 选项 </span></span><br><span class="line"><span class="comment">#阅读更为方便</span></span><br></pre></td></tr></table></figure>
+
+<p>下面为源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">pg_dir:</span><br><span class="line">#注意这个标号，实际上代表着地址为0 的内存，下文中建立页目录的时候会用到。</span><br><span class="line">.globl startup_32</span><br><span class="line">startup_32:</span><br><span class="line">    movl $0x10, %eax</span><br><span class="line">    mov %ax, %ds</span><br><span class="line">    mov %ax, %es</span><br><span class="line">    mov %ax, %fs</span><br><span class="line">    mov %ax, %gs</span><br><span class="line">    lss stack_start, %esp   </span><br><span class="line"></span><br><span class="line">    #前面部分使用设置段寄存器中选择子为 0x10,即使用 GDT 中索引号为 2 的描述符（其实就是之前定义第二个段描述符）</span><br><span class="line">    #stack_start 符号并没有定义 head.s 中，而是定义在 kernel&#x2F;sched.c 中，见以下代码</span><br><span class="line">    #lss 指令为低32位加载到 esp</span><br><span class="line">    #高16位加载到 SS </span><br><span class="line">    #最终生成的机器码为反汇编为 ds:0x000252c0</span><br><span class="line">    #这里也了产生疑问，如何安排能够找到 kernel&#x2F;sched.c  的符号的？</span><br><span class="line">    #下面也可以看到  stack_start 对应结构体如下</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span>         </span><br><span class="line">    <span class="keyword">long</span> * a;    </span><br><span class="line">    <span class="keyword">short</span> b;                                                   </span><br><span class="line">    &#125; stack_start = &#123; &amp; user_stack [PAGE_SIZE&gt;&gt;<span class="number">2</span>] , <span class="number">0x10</span> &#125;;   </span><br><span class="line"><span class="comment">// long 4 字节 的指针</span></span><br><span class="line"><span class="comment">// short 2 字节 </span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>疑问中。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">call setup_idt          # 设置中断描述符表</span><br><span class="line">call setup_gdt          # 设置全局描述符表</span><br></pre></td></tr></table></figure>
+
+<p>查看<code>setup_idt</code> 例程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">setup_idt:</span><br><span class="line">    lea ignore_int, %edx</span><br><span class="line">    movl $0x00080000, %eax		</span><br><span class="line">    movw %dx, %ax				</span><br><span class="line">    movw $0x8E00, %dx				</span><br><span class="line">                                </span><br><span class="line"></span><br><span class="line">    lea idt, %edi				# idt是中断描述符表的地址</span><br><span class="line">    mov $256, %ecx</span><br><span class="line"></span><br><span class="line">    #实际上这里在构造 中断门描述符</span><br><span class="line">    #首先将 标号 ignore_int 处的偏移地址放入 EDX</span><br><span class="line">    #0x00080000 置入 EAX </span><br><span class="line">    #将偏移地址的低16位置入 AX，现在EAX 的值为  0x0008|偏移地址低16位(中断门描述符低32位)</span><br><span class="line">    #目标代码段选择子为 0x08 ，描述符索引为 1 ,即为 前面定义的代码段</span><br><span class="line">    #0x8E00置入 DX ，现在EDX 的值为  偏移地址高16位|0x8e00（中断门描述符高32位）</span><br><span class="line">rp_sidt:</span><br><span class="line">    movl %eax, (%edi)			</span><br><span class="line">    movl %edx, 4(%edi)</span><br><span class="line">    addl $8, %edi				</span><br><span class="line">    dec %ecx</span><br><span class="line">    jne rp_sidt</span><br><span class="line">    lidt idt_descr				# 加载中断描述符表寄存器值</span><br><span class="line">    ret</span><br><span class="line">    #将中断门描述符填入中断描述符表所在的内存</span><br><span class="line">    #填入中断描述符表，一共256次</span><br><span class="line">    #最后 ret 至调用处</span><br><span class="line">    #最后的结果是所有的中断描述符最终都指向 ignore_int 例程</span><br><span class="line">......</span><br><span class="line">.align 4</span><br><span class="line">ignore_int:</span><br><span class="line">    pushl %eax</span><br><span class="line">    pushl %ecx</span><br><span class="line">    #这部分略</span><br><span class="line">......</span><br><span class="line">.align 8</span><br><span class="line">#对齐为8字节</span><br><span class="line">idt:	.fill 256, 8, 0					# idt is uninitialized</span><br><span class="line">#该指令格式为  .fill repeat , size , value #重复次数，重复的大小，重复的值</span><br><span class="line">#即这里为重复256次的 0x00，每个0x00 8字节</span><br><span class="line">#这里为中断描述符表预留空间</span><br><span class="line">......</span><br><span class="line">.word 0</span><br><span class="line">idt_descr:</span><br><span class="line">    .word 256 * 8 - 1				# idt contains 256 entries</span><br><span class="line">    .long idt</span><br><span class="line">    #前 2 字节是描述符的段界限（段长度-1）</span><br><span class="line">    #后 4 字节是中断描述符表的内存地址</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b 0x19</span><br></pre></td></tr></table></figure>
+
+<img src="https://data-1256314339.file.myqcloud.com/image/head%E4%B8%AD%E8%AE%BE%E7%BD%AEIDT%E4%B9%8B%E5%90%8E.png" style="zoom:67%;" />
+
+<blockquote>
+<p>实际上 中断门描述符表的 256 项均已设置，这里仅展示前2个。所以的中断门描述符指向同一中断。</p>
+</blockquote>
+<p>查看<code>setup_gdt </code>例程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">setup_gdt:</span><br><span class="line">    lgdt gdt_descr</span><br><span class="line">    ret</span><br><span class="line">......</span><br><span class="line">.word 0</span><br><span class="line">gdt_descr:</span><br><span class="line">    .word 256 * 8 - 1				# so does gdt (not that that&#39;s any</span><br><span class="line">    .long gdt						# magic number, but it works for me :^)</span><br><span class="line">......</span><br><span class="line">gdt:</span><br><span class="line">    .quad 0x0000000000000000			&#x2F;* NULL descriptor *&#x2F;</span><br><span class="line">    .quad 0x00c09a0000000fff			&#x2F;* 16Mb *&#x2F;		</span><br><span class="line">    .quad 0x00c0920000000fff			&#x2F;* 16Mb *&#x2F;		</span><br><span class="line">    .quad 0x0000000000000000			&#x2F;* TEMPORARY - don&#39;t use *&#x2F;</span><br><span class="line">    .fill 252, 8, 0						&#x2F;* space for LDT&#39;s and TSS&#39;s etc *&#x2F;</span><br><span class="line">    #很容易猜到 .quad 是伪指令 声明了 8字节(64位) </span><br><span class="line">    #定义了4个描述符</span><br><span class="line">    #第一个描述符为空(null)</span><br><span class="line">    #----------------------------------------------------------------</span><br><span class="line">    #第二个描述符(索引号为 0x08)  </span><br><span class="line">    #段基地址  0x0000 0000 </span><br><span class="line">    #粒度为 1 段界限单位为 4KB  默认操作数大小为 32位 </span><br><span class="line">    # TYPE 1010  代码段 可执行、可读</span><br><span class="line">    #段界限为 0x0 0fff  实际使用的段界限为 0xFF FFFF 实际上这段空间即为  16MB </span><br><span class="line">    #----------------------------------------------------------------</span><br><span class="line">    #第三个描述符(索引号为 0x10)</span><br><span class="line">    #段基地址 0x0000 0000</span><br><span class="line">    #粒度为 1 段界限单位为 4KB  默认操作数大小为 32位 </span><br><span class="line">    #TYPE 0010 数据段：可读、可写</span><br><span class="line">    #段界限为 0x0 0fff  实际使用的段界限为 0xFF FFFF 实际上这段空间即为  16MB </span><br><span class="line">    #---------------------------------------------------------------</span><br><span class="line">    #第四个描述符（索引号为 0x18) 为空</span><br><span class="line">    #其余 252 个描述符使用 0 填充。为其余的段描述符预留空间</span><br></pre></td></tr></table></figure>
+
+<p>经过例程<code>setup_idt </code> 和<code>setup_gdt </code>重新设置了中断描述符表和全局描述符表，虽然段寄存器的选择子目前指向正确，但是<strong>描述符高速缓存器</strong>加载的是 <code>setup.s</code>执行时设置段描述符，需要重新加载选择子，刷新描述符高速缓存出去，使其指向正确的地址。</p>
+<blockquote>
+<p>为什么要重新设置 GDT ？</p>
+<p>原来的 GDT 指向的是 <code>setup.s</code>中在内存中的位置，这个位置现在被<code>system</code>模块覆盖，所以需要重新设置GDT 。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">movl $0x10, %eax        # reload all the segment registers</span><br><span class="line">mov %ax, %ds            # after changing gdt. CS was already</span><br><span class="line">mov %ax, %es            # reloaded in &#39;setup_gdt&#39;</span><br><span class="line">mov %ax, %fs</span><br><span class="line">mov %ax, %gs</span><br><span class="line">lss stack_start, %esp</span><br><span class="line">#这里的注释说 CS 在setup_gdt 加载过了</span><br><span class="line">#从前面可以看到，例程  setup_gdt 其实非常简单 ，并没有涉及 CS 的加载。</span><br><span class="line">#笔者认为这里是个错误，但是不影响接下来的执行。</span><br><span class="line">#其余的指令为使用 0x10 加载到各个段寄存器，刷新描述符高速缓存器</span><br><span class="line">#最后的 stack_start 和前面同理</span><br></pre></td></tr></table></figure>
+
+<p>测试 A20 gate 是否开启：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    xorl %eax, %eax</span><br><span class="line">1:	incl %eax               # check that A20 really IS enabled</span><br><span class="line">    movl %eax, 0x000000     # loop forever if it isn&#39;t</span><br><span class="line">    cmpl %eax, 0x100000</span><br><span class="line">    je 1b</span><br><span class="line">    #向 EAX 中写入 1，然后查看地址 0x0:0x100000 处是否也是相同的值</span><br><span class="line">    #如果相同，表示A20 gate 未开启，产生了地址回绕，无法访问 1MB 以上的内存</span><br><span class="line">    #如果不同，则表示 A20 gate 正确开启</span><br></pre></td></tr></table></figure>
+
+<p>检查是否存在<code>x87</code>协处理器：</p>
+<blockquote>
+<p> 协处理器 、  FPU  、浮点运算单元 都是同一个东西</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">    movl %cr0, %eax						# check math chip</span><br><span class="line">    andl $0x80000011, %eax				# Save PG,PE,ET</span><br><span class="line">    &#x2F;* &quot;orl $0x10020,%eax&quot; here for 486 might be good *&#x2F;</span><br><span class="line">    orl $2, %eax						# set MP</span><br><span class="line">    movl %eax, %cr0</span><br><span class="line">    call check_x87</span><br><span class="line">    jmp after_page_tables</span><br><span class="line">    #这里的做法是，假设存在协处理器，执行协处理器指令，检查标志位，如果出错则表示协处理器不存在。</span><br><span class="line">    #和 0x80000011 进行与操作，位 31 、 位 1 、位 0 将置1 ，这几位分别代表PG（分页）、ET( 为 1 表示系统有 80387协处理器，为 0 表示使用 80287 协处理器)、PE(保护模式)</span><br><span class="line">    #注意，是与操作，如果 CR0 中本来未开启，则不会置1</span><br><span class="line">    #将位1 置 1 （MP）</span><br><span class="line">    #设置 CR0 的 PG(分页)、ET（ 80387协处理器位）、PE（保护模式）</span><br><span class="line">    #注释，是与操作，如果 CRO 对应的位不存在，则不会置1 。</span><br><span class="line">    #最后设置 MP 位（位1 的 协处理器存在位）</span><br><span class="line"></span><br><span class="line">check_x87:</span><br><span class="line">    fninit</span><br><span class="line">    fstsw %ax</span><br><span class="line">    cmpb $0, %al						# </span><br><span class="line">    je 1f								&#x2F;* no coprocessor: have to set bits *&#x2F;</span><br><span class="line">    movl %cr0, %eax</span><br><span class="line">    xorl $6, %eax						&#x2F;* reset MP, set EM *&#x2F;</span><br><span class="line">    movl %eax, %cr0</span><br><span class="line">    ret</span><br><span class="line">    #fninit 指令 为初始化协处理器指令，其余作用略，重点是将清除状态字（全部为0）</span><br><span class="line">    # fstsw %ax 指令将状态字存储到 AX中</span><br><span class="line">    #如果状态字为 0 ，表示存在 X87 协处理器 ，往下jmp 至 标号 1处</span><br><span class="line">    #如果状态字为其他，表示不存在 x97 协处理器</span><br><span class="line">    #将 CR0  EM（位2，协处理器仿真位）置 1、MP(位1 ，协处理器存在标志位) 置0 。</span><br><span class="line">    </span><br><span class="line">.align 4</span><br><span class="line">1:	.byte 0xDB,0xE4		&#x2F;* fsetpm for 287, ignored by 387 *&#x2F;	</span><br><span class="line">    ret</span><br><span class="line">    #DBE4 实际上是  fsetpm 指令的机器码，该指令为协处理器的指令</span><br><span class="line">    #该指令为 设置 80287协处理器 在保护模式下,80387 协处理器将该指令视为空指令</span><br></pre></td></tr></table></figure>
+
+<p>开始准备初始化页目录表和页表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">.org 0x1000		</span><br><span class="line">pg0:</span><br><span class="line"></span><br><span class="line">.org 0x2000</span><br><span class="line">pg1:</span><br><span class="line"></span><br><span class="line">.org 0x3000</span><br><span class="line">pg2:</span><br><span class="line"></span><br><span class="line">.org 0x4000</span><br><span class="line">pg3:</span><br><span class="line"></span><br><span class="line">.org 0x5000</span><br><span class="line">.org 0x5000  </span><br><span class="line">tmp_floppy_area:</span><br><span class="line">    .fill 1024,1,0</span><br><span class="line">    #1024 次 1字节，填充内容为 0x0</span><br><span class="line">    # org 指令表示该指令的起始地址为 0x5000 </span><br><span class="line">    #这几个标号留待下文使用</span><br><span class="line">after_page_tables:</span><br><span class="line">    pushl $0						# These are the parameters to main :-)</span><br><span class="line">    pushl $0						</span><br><span class="line">    pushl $0</span><br><span class="line">    pushl $L6						# return address for main, if it decides to.</span><br><span class="line">    pushl $main</span><br><span class="line">    jmp setup_paging				#</span><br><span class="line">L6:</span><br><span class="line">    jmp L6							# main should never return here, but</span><br><span class="line">                                    # just in case, we know what happens.</span><br><span class="line">    #push 了 5个双字到栈中</span><br><span class="line">    #前三个为 0x0000 0000</span><br><span class="line">    #这里连续 push 了三次 0x00</span><br><span class="line">    #为了模拟 main 函数的  envp、argv 指针和 argc 参数</span><br><span class="line">    #最后push L6 ，实际上不允许 main  ret ，如果 ret 回来将陷入  L6的死循环。</span><br></pre></td></tr></table></figure>
+
+<p>开始创建分页机制：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">.align 4</span><br><span class="line">setup_paging:</span><br><span class="line">    movl $1024 * 5, %ecx				&#x2F;* 5 pages - pg_dir+4 page tables *&#x2F;</span><br><span class="line">    xorl %eax, %eax</span><br><span class="line">    xorl %edi, %edi						&#x2F;* pg_dir is at 0x000 *&#x2F;	</span><br><span class="line">                                        </span><br><span class="line">    cld;rep;stosl						</span><br><span class="line">	</span><br><span class="line">	#从 0x0000 0000 到 0x0000 5000(不包括最后一个地址) ,填充 1024*5 次 的 0x0000 0000</span><br><span class="line">	#注意下面的标号</span><br><span class="line">	#这段空间大概为 20KB，这段空间的第一个 4KB 用作页目录表，后 16 KB 用作页表。</span><br><span class="line">    #为什么能够安全填充前 20KB ？</span><br><span class="line">    #前面的tmp_floppy_ar 的起始地址就为 0x5000 ，也就是tmp_floppy_area 后面的代码实际上都在 地址 0000 之后，所以才能够随意的填充（当前也会覆盖前面的代码）</span><br><span class="line">    #16KB 的页表项能够映射多少内存空间？</span><br><span class="line">    #每个页表项占 4 个byte（字节） ，即最多有 4096 页表项，每个页表项表示的物理内存是 4kb</span><br><span class="line">    #也就是说最多 16 KB 的页表项最多能寻址  16 MB 的内存。</span><br><span class="line"></span><br><span class="line">    movl $pg0 + 7, pg_dir				&#x2F;* set present bit&#x2F;user r&#x2F;w *&#x2F;</span><br><span class="line">    movl $pg1 + 7, pg_dir + 4			&#x2F;*  --------- &quot; &quot; --------- *&#x2F;</span><br><span class="line">    movl $pg2 + 7, pg_dir + 8			&#x2F;*  --------- &quot; &quot; --------- *&#x2F;</span><br><span class="line">    movl $pg3 + 7, pg_dir + 12			&#x2F;*  --------- &quot; &quot; --------- *&#x2F;</span><br><span class="line">	#pg_dir其实为就是 head.s 开始的第一行</span><br><span class="line">	#创建了4个页目录项 ，为什么都加了7？原因是低12位为页目录项的一些属性位</span><br><span class="line">	#这里页目录属性为7 ，表示 页存在、可读可写、允许所有特权级别的程序访问。</span><br><span class="line"> </span><br><span class="line">    movl $pg3 + 4092, %edi	</span><br><span class="line">    movl $0xfff007, %eax			</span><br><span class="line">    std								</span><br><span class="line">1:	stosl							</span><br><span class="line">    subl $0x1000, %eax				</span><br><span class="line">    jge 1b							</span><br><span class="line">    cld</span><br><span class="line">    #std 设置增长方向为负,开始逆序填写页表</span><br><span class="line">    #$pg3 + 4092 是第4个页表的最后一页表项,对应的值为 0xfff007 ，实际上该地址是16 MB 的最后一个4kb起始地址</span><br><span class="line">    #每次填写的页表项 -0x1000 ，实际为 4kb的内存空间</span><br><span class="line">    #最终将16KB 的页表项均填写完成，设置增长方向为正。</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    xorl %eax, %eax					&#x2F;* pg_dir is at 0x0000 *&#x2F;</span><br><span class="line">    movl %eax, %cr3					&#x2F;* cr3 - page directory start *&#x2F;</span><br><span class="line">    #开启页机制，CR3 控制寄存器中 存放着当前任务页目录的物理地址（我这里提到了任务，请忽略，后面会解释）</span><br><span class="line">    #当前页目录的的物理地址为 0x0000 0000</span><br><span class="line">    #强调，CR3 控制寄存器、页目录项、页表项存放的都是物理地址（忽略页属性）</span><br><span class="line">   </span><br><span class="line">    movl %cr0, %eax</span><br><span class="line">    orl $0x80000000, %eax			</span><br><span class="line">    movl %eax, %cr0					&#x2F;* set paging (PG) bit *&#x2F;</span><br><span class="line">    ret								&#x2F;* this also flushes prefetch-queue *&#x2F;</span><br><span class="line">    #将CR0 的位 31 置1 ，开始分页模式</span><br><span class="line">    #注意，开启即生效，此时 段部件合成的地址为 线性地址 </span><br><span class="line">    #线性地址经过页部件合成之后才是 物理地址 </span><br></pre></td></tr></table></figure>
+
+<p>举例说明：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">b 0x54a5</span><br><span class="line"><span class="comment">#该位置实际上  movl %eax, %cr0 在执行之后</span></span><br><span class="line"><span class="comment">#此时CS 段寄存器的描述符缓存器的段基地址为 0x0000 0000</span></span><br><span class="line"><span class="comment">#IP 寄存器的值为 0x000054a8</span></span><br><span class="line"><span class="comment">#段部件合成的线性地址为  0x000054a8</span></span><br><span class="line"><span class="comment">#该地址分为三部分 高10位、中间10位、低12位</span></span><br><span class="line"><span class="comment">#0x00 、0x05、0x4a8 </span></span><br><span class="line"><span class="comment">#0x00 * 4 = 0x00 对应的页目录项物理地址为 0x0000 0000 + 0x00 = 0x0000 0000</span></span><br><span class="line"><span class="comment">#0x05 * 4 = 0x14 对应的页表项 0x0000 1000 + 0x14 = 0x0000 1014</span></span><br><span class="line"><span class="comment">#0x5000 + 0x4a8 = 0x54a8 </span></span><br><span class="line"><span class="comment">#最终页部件得到的物理地址和段部件得到的线性地址相同</span></span><br><span class="line"><span class="comment">#这是有意设计的</span></span><br><span class="line"><span class="comment">#前面的页表安排使得线性地址和物理地址相同</span></span><br></pre></td></tr></table></figure>
+
+<img src="https://data-1256314339.cos.ap-shanghai.myqcloud.com/image/使用bochs查看页目录表和页表.png" style="zoom:75%;" />
+
+<p>最后是一个<code>ret</code>结尾，前面<code>pushl $main</code>将<code>main</code>符号的偏移地址 <code>push</code>到栈中，这里到<code>ret</code>将该地址<code>pop</code>到<code>ip</code>中。至此，<code>head.s</code>结束，控制转移给 <code>init/main.c</code>中的<code>main</code>函数。</p>
+<h2 id="一些汇编指令的解释"><a href="#一些汇编指令的解释" class="headerlink" title="一些汇编指令的解释"></a><strong>一些汇编指令的解释</strong></h2><p>关于 <code>.align</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#tmp.asm</span><br><span class="line">.data</span><br><span class="line">.byte 1</span><br><span class="line">.byte 0x11</span><br><span class="line">#只有 .data 段有数据，其他为空</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">as --32 -o a.o tmp.asm</span><br><span class="line">objdump -s -j .text a.o</span><br></pre></td></tr></table></figure>
+
+<img src="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90.png" style="zoom:50%;" />
+
+<p>可以看到 <code>0x11</code> 紧接着 <code>0x01</code>，<code>0x01</code>的地址为 <code>0x00</code>，<code>0x11</code>的对称为<code>0x11</code>。</p>
+<p>使用伪指令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#tmp.asm</span><br><span class="line">.data</span><br><span class="line">.byte 1</span><br><span class="line">.align 2</span><br><span class="line">.byte 0x11</span><br></pre></td></tr></table></figure>
+
+<img src="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90-1.png" style="zoom:50%;" />
+
+<p>可以看到<code>0x11</code>的偏移为 <code>0x02</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#tmp.asm</span><br><span class="line">.data</span><br><span class="line">.byte 1</span><br><span class="line">.align 4</span><br><span class="line">.byte 0x11</span><br></pre></td></tr></table></figure>
+
+<img src="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90-2.png" style="zoom:50%;" />
+
+<p>可以看到<code>0x11</code>的偏移为 <code>0x04</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#tmp.asm</span><br><span class="line">.data</span><br><span class="line">.byte 1</span><br><span class="line">.align 16</span><br><span class="line">.byte 0x11</span><br></pre></td></tr></table></figure>
+
+<img src="https://data-1256314339.file.myqcloud.com/image/GAS%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%AF%B9%E9%BD%90-3.png" style="zoom:50%;" />
+
+<p>可以看到<code>0x11</code>的偏移为 <code>0x10</code>。</p>
+<p>即<code>.align n</code>，<strong>下一个数据</strong>起始地址为<code>地址%n=0</code>的地址处。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>总结一下 目前 <code>head.s</code>完成的功能：</p>
+<ul>
+<li>设置 IDT 、GDT；</li>
+<li>测试 A20 gate ；</li>
+<li>检查是否存在 <code>x87 </code>协处理器；</li>
+<li>开启分页机制，包括创建页目录表，创建页表。</li>
+<li>最后控制转移至 <code>init/main.c</code>处。</li>
+</ul>
+<p><strong>总结下目前的疑问</strong></p>
+<ul>
+<li>这里使用 <code>main</code>符号，实现了 汇编和 C 的相互调用，明天在看下这部分；</li>
+<li>汇编调用了 C 中的结构体<code>stack_start</code>，需要理解这里的栈式如何确定的；</li>
+<li>在<code>bootsect</code>对设备号的疑问仍然存在；</li>
+<li>如何精确的安排<code>hdad.s</code>在system 模块头部，或者说如何编译组织的 <code>system</code>模块。</li>
+</ul>
+<p><strong>参考</strong></p>
+<p>LInux  内核 完全注释</p>
+<p>x86汇编语言：从实模式到保护模式（有点忘了，又去翻书）</p>
+<!-- flag of hidden posts -->
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#head-s"><span class="toc-number">1.</span> <span class="toc-text">head.s</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E6%B1%87%E7%BC%96%E6%8C%87%E4%BB%A4%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="toc-number">2.</span> <span class="toc-text">一些汇编指令的解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">小结</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://wuhash.com/p/166ab9cc.html"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://wuhash.com/p/166ab9cc.html&text=head 模块"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://wuhash.com/p/166ab9cc.html&is_video=false&description=head 模块"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=head 模块&body=Check out this article: http://wuhash.com/p/166ab9cc.html"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://wuhash.com/p/166ab9cc.html&title=head 模块"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://wuhash.com/p/166ab9cc.html&name=head 模块&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://wuhash.com/p/166ab9cc.html&t=head 模块"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    伍默
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0bb641a53e8b4867bcd35363aa4eab9b"}'></script>
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

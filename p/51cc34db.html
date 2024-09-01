@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="linux 0.12 的 bootsect 模块部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bootsect">
+<meta property="og:url" content="http://wuhash.com/p/51cc34db.html">
+<meta property="og:site_name" content="伍默的博客">
+<meta property="og:description" content="linux 0.12 的 bootsect 模块部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/linux0.12%E7%9A%84%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/bootsect%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/jmpf0x9000_0x0018.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/Makefile%20%E6%89%A7%E8%A1%8C%E7%9A%84%E5%91%BD%E4%BB%A4.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/main_argc%E4%BB%8E%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%8E%A5%E6%94%B6%E7%9A%84%E5%8F%82%E6%95%B0%E4%B8%AA%E6%95%B0.png">
+<meta property="og:image" content="https://data-1256314339.file.myqcloud.com/image/Linux0.12%E7%9A%84%E6%A0%B9%E6%96%87%E4%BB%B6%E8%AE%BE%E5%A4%87%E4%B8%BB%E8%AE%BE%E5%A4%87%E5%8F%B7%E5%92%8C%E6%AC%A1%E8%AE%BE%E5%A4%87%E5%8F%B7.png">
+<meta property="article:published_time" content="2020-12-27T12:31:18.000Z">
+<meta property="article:modified_time" content="2024-09-01T17:39:09.974Z">
+<meta property="article:author" content="伍默">
+<meta property="article:tag" content="Linux 0.12">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://data-1256314339.file.myqcloud.com/image/linux0.12%E7%9A%84%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>bootsect</title><meta name="robots" content="noindex">
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="伍默的博客" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://wuhash.com/p/51cc34db.html"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://wuhash.com/p/51cc34db.html&text=bootsect"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://wuhash.com/p/51cc34db.html&is_video=false&description=bootsect"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=bootsect&body=Check out this article: http://wuhash.com/p/51cc34db.html"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://wuhash.com/p/51cc34db.html&name=bootsect&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://wuhash.com/p/51cc34db.html&t=bootsect"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E7%AF%87%E7%9A%84%E5%BA%9F%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">开篇的废话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bootsect-S-%E6%BA%90%E7%A0%81"><span class="toc-number">2.</span> <span class="toc-text">bootsect.S 源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96setup%E6%A8%A1%E5%9D%97"><span class="toc-number">3.</span> <span class="toc-text">读取setup模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96system%E6%A8%A1%E5%9D%97"><span class="toc-number">4.</span> <span class="toc-text">读取system模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E8%AE%BE%E5%A4%87"><span class="toc-number">5.</span> <span class="toc-text">检查根文件系统设备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">小结</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        bootsect
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">伍默</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-12-27T12:31:18.000Z" itemprop="datePublished">2020-12-27</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="开篇的废话"><a href="#开篇的废话" class="headerlink" title="开篇的废话"></a>开篇的废话</h2><p>当处理器的RESET 引脚的电平由低变高时，处理器会执行一个硬件初始化，以及一个可选的内部自测试（BIST），然后将内部寄存器初始化到一个预置的状态。</p>
+<p>在刚刚启动时，CPU从一个特定的地址开始执行指令。</p>
+<ul>
+<li>以8086为例，这个地址是 <code>0xFFFF0</code>（由初始化的CS:IP 决定，此时的 CS 和 IP 分别是 0xF000和0xFFF0)。</li>
+</ul>
+<blockquote>
+<p>16 位 CPU ，8086 寻址空间为 1M ，<code>0xF FFF0</code>是实际上是内存空间中的最后一条指令。</p>
+</blockquote>
+<ul>
+<li>以80386为例，这个地址是<code>0xFFFFFFF0</code>(此时的CS和IP 分别是0xF000和0xFFF0)。</li>
+</ul>
+<blockquote>
+<p>注意，32位CPU 下，这里采用的地址计算方式不是CS * 0x10+IP ,而是使用 段描述符高速缓存器中的段基地址。</p>
+<p>如果使用<code>bochs</code>调试就可以看到此时的 CS 描述符高速缓存器中的段基地址为 <code>0xffff0000</code>,此时的 IP 为<code>0xFFF0</code>,所以最终指向的第一条指令为<code>0xFFFF FFF0</code>，同样，这个地址是内存空间中的最后一条指令。</p>
+<p>在32位CPU 下，该指令是<code>jmpf 0xf000:e05b</code>,跳转执行的内存地址为 <code>0xfe05b</code>（在1M 内存内执行），实际上该地址就是ROM-BIOS 部分。</p>
+<p>ROM-BIOS 会被映射到 1M 内存和4G的最后部分（具体地址请自行考究）</p>
+</blockquote>
+<p>在执行了 BIOS 之后，BIOS 会将存储设备(软盘或硬盘）的头512字节数据加载到0x7c00，并且会检查512字节的内容是否以 <code>0x55</code>和<code>0xaa</code>结尾，否则引导程序无效。</p>
+<blockquote>
+<p>关于这个地址为什么是 <code>0x7c00</code>，你可以参考 <a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/09/0x7c00.html">为什么主引导记录的内存地址是0x7C00？</a><img src="https://data-1256314339.file.myqcloud.com/image/linux0.12%E7%9A%84%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA.png"></p>
+</blockquote>
+<blockquote>
+<p>Image 是 Linux 0.12 的镜像文件</p>
+</blockquote>
+<p>在 Linux 0.12 中，这个 头 512 字节实际上就是 <code>bootsect.S</code>。</p>
+<h2 id="bootsect-S-源码"><a href="#bootsect-S-源码" class="headerlink" title="bootsect.S 源码"></a><code>bootsect.S</code> 源码</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">as86 -0 -a -o bootsect.o bootsect.s</span><br><span class="line">ld86 -0 -s -o bootsect bootsect.o</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://data-1256314339.file.myqcloud.com/image/bootsect%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6.png"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">BOOTSEG  &#x3D; 0x07c0</span><br><span class="line">INITSEG  &#x3D; 0x9000</span><br><span class="line"></span><br><span class="line">entry start</span><br><span class="line">start:</span><br><span class="line">	mov	ax,#BOOTSEG</span><br><span class="line">	mov	ds,ax</span><br><span class="line">	mov	ax,#INITSEG</span><br><span class="line">	mov	es,ax</span><br><span class="line">	mov	cx,#256</span><br><span class="line">	sub	si,si</span><br><span class="line">	sub	di,di</span><br><span class="line">	rep</span><br><span class="line">	movw</span><br><span class="line">	jmpi	go,INITSEG</span><br><span class="line">go:	mov	ax,cs	</span><br></pre></td></tr></table></figure>
+
+<p>将<code>0x7c00</code>开始的512字节（其实就是引导扇区<code>bootsect</code>部分）复制到<code>0x90000</code>开始的内存位置，最后跳转到<code>0x9000:go</code>位置执行。</p>
+<p><img src="https://data-1256314339.file.myqcloud.com/image/jmpf0x9000_0x0018.png"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">go:	mov	ax,cs		</span><br><span class="line">	mov	dx,#0xfef4	! arbitrary value &gt;&gt;512 - disk parm size</span><br><span class="line"></span><br><span class="line">	mov	ds,ax</span><br><span class="line">	mov	es,ax</span><br><span class="line">	push	ax</span><br><span class="line"></span><br><span class="line">	mov	ss,ax		! put stack at 0x9ff00 - 12.</span><br><span class="line">	mov	sp,dx</span><br><span class="line">	</span><br><span class="line">	#设置 ds 、es ss 段寄存器的的值为0x9000</span><br><span class="line">	#为什么设置栈指针为0xfef4，实际栈指针大于等于512即可</span><br><span class="line">	#还需考虑到后续还要加载 setup 的大小</span><br><span class="line">	#在linux 0.11 中，这个值是0x9ff00，这里为了放软盘参数表，准备了12字节的空间留待后续使用</span><br><span class="line">	#0x9000:0xfef4 &#x3D; 0x9 FEF4 + 12 &#x3D; 0x9 ff00</span><br><span class="line">	</span><br><span class="line">	push	#0</span><br><span class="line">	pop	fs</span><br><span class="line">	mov	bx,#0x78		! fs:bx is parameter table address</span><br><span class="line">	seg fs</span><br><span class="line">	lgs	si,(bx)			! gs:si is source</span><br><span class="line"></span><br><span class="line">	mov	di,dx			! es:di is destination</span><br><span class="line">	mov	cx,#6			! copy 12 bytes	</span><br><span class="line">	cld</span><br><span class="line"></span><br><span class="line">	rep</span><br><span class="line">	seg gs</span><br><span class="line">	movw</span><br><span class="line"></span><br><span class="line">	mov	di,dx</span><br><span class="line">	movb	4(di),*18		! patch sector count</span><br><span class="line">	</span><br><span class="line">	#从fs:bx处读出软盘参数表的地址，低字软盘参数表的偏移地址读到SI 中，高字软盘参数表的段地址读到GS中</span><br><span class="line">	#将软盘参数表复制到0x9000:0xfef4 ,即上面的空出来的地址</span><br><span class="line">	#修改软盘扇区中的偏移为4的位置，设置为18</span><br><span class="line">	#该参数是软盘参数中每磁道的最大扇区数</span><br><span class="line">	#注意：0x0 0078 处并不是一个中断向量</span><br><span class="line"></span><br><span class="line">	seg fs</span><br><span class="line">	mov	(bx),di</span><br><span class="line">	seg fs</span><br><span class="line">	mov	2(bx),es</span><br><span class="line"></span><br><span class="line">	#修改软盘参数表中的偏移地址和段地址，使其指向修改后的软盘参数表位置 0x9000：0xfef4</span><br><span class="line">	pop	ax</span><br><span class="line">	mov	fs,ax</span><br><span class="line">	mov	gs,ax</span><br><span class="line">	</span><br><span class="line">	#fs gs &#x3D; 0x9000</span><br><span class="line">	</span><br><span class="line">	xor	ah,ah			! reset FDC </span><br><span class="line">	xor	dl,dl</span><br><span class="line">	int 	0x13	</span><br><span class="line">	</span><br><span class="line">	#调用0x13 中断，重置 第一块软盘 的磁盘系统</span><br></pre></td></tr></table></figure>
+
+<h2 id="读取setup模块"><a href="#读取setup模块" class="headerlink" title="读取setup模块"></a>读取<code>setup</code>模块</h2><p>接着准备读取<code>setup</code>模块：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">SETUPLEN &#x3D; 4	</span><br><span class="line">......</span><br><span class="line">    load_setup:</span><br><span class="line">    xor	dx, dx					! drive 0, head 0</span><br><span class="line">    mov	cx,#0x0002				! sector 2, track 0</span><br><span class="line">    mov	bx,#0x0200				! address &#x3D; 512, in INITSEG</span><br><span class="line">    mov	ax,#0x0200+SETUPLEN		! service 2, nr of sectors</span><br><span class="line">    int	0x13					! read it</span><br><span class="line">    jnc	ok_load_setup 			! ok - continue ;jnc - jump not cf</span><br><span class="line"></span><br><span class="line">    push	ax			! dump error code</span><br><span class="line">    call	print_nl</span><br><span class="line">    mov	bp, sp</span><br><span class="line">    call	print_hex</span><br><span class="line">    pop	ax</span><br><span class="line"></span><br><span class="line">    xor	dl, dl			! reset FDC </span><br><span class="line">    xor	ah, ah</span><br><span class="line">    int	0x13</span><br><span class="line">    j	load_setup 		; j - jmp</span><br><span class="line">	#调用 0x13 号中断，从 0x9000:0x200 开始读取4个扇区</span><br><span class="line">	#磁头为0，驱动器为 0 的软盘</span><br><span class="line">	#柱面为0，扇区号为2</span><br><span class="line">	#如果返回码（CF &#x3D; 0 ）表示读取成功</span><br><span class="line">	#否则打印错误的状态码，重置 第一个软盘的磁盘系统，重新读取扇区</span><br><span class="line">	</span><br><span class="line">ok_load_setup:</span><br><span class="line"></span><br><span class="line">! Get disk drive parameters, specifically nr of sectors&#x2F;track</span><br><span class="line">。</span><br><span class="line">    xor	dl,dl</span><br><span class="line">    mov	ah,#0x08        ! AH&#x3D;8 is get drive parameters</span><br><span class="line">    int	0x13</span><br><span class="line">    xor	ch,ch</span><br><span class="line">    seg cs</span><br><span class="line">    mov	sectors,cx      。</span><br><span class="line">    mov	ax,#INITSEG</span><br><span class="line">    mov	es,ax           </span><br><span class="line">    #使用 0x13 中断的 08功能读取驱动器的参数，ES:DI &#x3D; 0x900:0xfef4</span><br><span class="line">    #重新读取软盘参数表</span><br><span class="line">    #CX 中是柱面数和扇区数</span><br><span class="line">    #保存到标号 sectors</span><br><span class="line"></span><br><span class="line">! Print some inane message</span><br><span class="line">    mov	ah,#0x03        ! read cursor pos</span><br><span class="line">    xor	bh,bh</span><br><span class="line">    int	0x10</span><br><span class="line"></span><br><span class="line">    mov	cx,#9</span><br><span class="line">    mov	bx,#0x0007      ! page 0, attribute 7 (normal)</span><br><span class="line">    mov	bp,#msg1</span><br><span class="line">    mov	ax,#0x1301      ! write string, move cursor</span><br><span class="line">    int	0x10</span><br><span class="line">    #使用 0x10 中断的 3 号功能，读取光标的位置</span><br><span class="line">    #使用 0x10 中断的 0x13 号功能，往显示区域写入字符</span><br><span class="line">! ok, we&#39;ve written the message, now</span><br><span class="line">.....</span><br><span class="line">    </span><br><span class="line">sectors:</span><br><span class="line">    .word 0  #初始化内容是2个字节的0x00 </span><br><span class="line">    </span><br><span class="line">msg1:</span><br><span class="line">    .byte 13,10   #13 10 是 CR LR 的ASCII 码</span><br><span class="line">    .ascii &quot;Loading&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="读取system模块"><a href="#读取system模块" class="headerlink" title="读取system模块"></a>读取<code>system</code>模块</h2><p>将<code>system</code>模块读取到内存中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mov	ax,#SYSSEG</span><br><span class="line">mov	es,ax			! segment of 0x010000</span><br><span class="line">call	read_it 	; 读磁盘上system模块</span><br><span class="line">call	kill_motor 	; 关闭驱动器马达</span><br><span class="line">call	print_nl</span><br><span class="line">#SYSSEG &#x3D; 0x1000</span><br><span class="line">#调用了3个例程,其中最后复杂的是 read_it</span><br><span class="line">#读取 system  到 0x1000:0x00 处</span><br></pre></td></tr></table></figure>
+
+<p>依次来看，首先看<code>read_it </code>例程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">read_it:</span><br><span class="line">    mov ax,es</span><br><span class="line">    test ax,#0x0fff</span><br><span class="line">die:</span><br><span class="line">    jne die			! es must be at 64kB boundary   </span><br><span class="line">    xor bx,bx		! bx is starting address within segment</span><br><span class="line">rp_read:</span><br><span class="line">    mov ax,es</span><br><span class="line">    cmp ax,#ENDSEG		! have we loaded all yet? ; 是否已经加载了全部数据？</span><br><span class="line">    jb ok1_read</span><br><span class="line">    ret</span><br><span class="line">    </span><br><span class="line">    #使用 teset 指令测试 SYSSEG 的值的低12位是否为0</span><br><span class="line">    #低12位为0 ，意味着所对应的地址在64 KB 的边界处（test指令可能导致其他问题，列入0x00 不会导致死循环）</span><br><span class="line">    #如果 SYSSEG  低于 ENDSEG 的值就 jmp 至 ok1_read</span><br><span class="line">    #否则 说明已经高于 ENDSEG,返回调用者</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">ok1_read:</span><br><span class="line">    seg cs</span><br><span class="line">    mov ax,sectors</span><br><span class="line">    sub ax,sread</span><br><span class="line">    mov cx,ax</span><br><span class="line">    shl cx,#9</span><br><span class="line">    add cx,bx</span><br><span class="line">    jnc ok2_read</span><br><span class="line">    je ok2_read</span><br><span class="line">    xor ax,ax</span><br><span class="line">    sub ax,bx</span><br><span class="line">    shr ax,#9</span><br><span class="line">    </span><br><span class="line">    #从标号sectors 读取每磁道的扇区数</span><br><span class="line">    #减去当前磁道已读扇区数，得到当前磁道未读扇区数</span><br><span class="line">    #并且计算当前磁道扇区数占用的字节数（*512）+偏移（初始值为0）是否超过了64KB</span><br><span class="line">    #没有超过则jmp 至  ok2_read</span><br><span class="line">    #如果超过，则计算最多能读取的字节数</span><br><span class="line">    #0 - 偏移 &#x3D; 最多能读取的字节数</span><br><span class="line">    #该值右移9位（&#x2F;512)即为最多能读取的扇区数</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">ok2_read:</span><br><span class="line">    call read_track ; 读当前磁道上指定扇区和需读扇区数的数据</span><br><span class="line">    mov cx,ax</span><br><span class="line">    add ax,sread</span><br><span class="line">    seg cs</span><br><span class="line">    cmp ax,sectors</span><br><span class="line">    jne ok3_read</span><br><span class="line">    mov ax,#1</span><br><span class="line">    sub ax,head</span><br><span class="line">    jne ok4_read</span><br><span class="line">    inc track</span><br><span class="line">ok4_read:</span><br><span class="line">    mov head,ax</span><br><span class="line">    xor ax,ax</span><br><span class="line">ok3_read:</span><br><span class="line">    mov sread,ax</span><br><span class="line">    shl cx,#9</span><br><span class="line">    add bx,cx</span><br><span class="line">    jnc rp_read</span><br><span class="line">    mov ax,es</span><br><span class="line">    add ah,#0x10</span><br><span class="line">    mov es,ax</span><br><span class="line">    xor bx,bx</span><br><span class="line">    jmp rp_read</span><br><span class="line">    </span><br><span class="line">    #ok2_read 例程</span><br><span class="line">    #read_track 的操作成功后的返回参数为 AH&#x3D;00  AL&#x3D;传输的扇区数</span><br><span class="line">    #标号 sread 处存放的是当前磁道已读扇区数</span><br><span class="line">    #传输的扇区数 + 当前磁道已读扇区数 &#x3D;？当前磁道扇区数（标号sectors）</span><br><span class="line">    #如果小于则说明当前磁道未读，jmp 至 ok3_read。</span><br><span class="line">    #如果不小于，说明当前磁道所有扇区已经读取，应该读取下一个磁道的的 1号磁头</span><br><span class="line">    #如果是0号磁头，则 jmp 至 ok4_read </span><br><span class="line">    #否则读取下一个磁道</span><br><span class="line">    </span><br><span class="line">    #ok4_read 例程</span><br><span class="line">    #将当前磁道号回填 标号head  处</span><br><span class="line">    </span><br><span class="line">    #ok3_read 例程</span><br><span class="line">    #将 标号 head 当前已读扇区数置0（为什么？因为换了磁头）</span><br><span class="line">    #检查上次读的扇区数量加偏移是否超出了 64 KB </span><br><span class="line">    #如果没有超出则 jmp 至 rp_read 继续读取</span><br><span class="line">    #如果超出则调整 段地址为下一个64KB 开始处，偏移置0 ，jmp 至 rp_read    </span><br></pre></td></tr></table></figure>
+
+<p>这里反复提到<code>rp_read </code>例程，该例程其实很简单：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">rp_read:</span><br><span class="line">    mov ax,es</span><br><span class="line">    cmp ax,#ENDSEG		! have we loaded all yet? </span><br><span class="line">    jb ok1_read</span><br><span class="line">    ret</span><br><span class="line">    #检测当前的段地址是否小于 ENDSEG</span><br><span class="line">    #如果小于，说明system还没读完，jmp 至 ok1_read 继续读取</span><br><span class="line">    #如果不小于，说明system已经读取完成，返回。</span><br><span class="line">    </span><br><span class="line">    #题外话</span><br><span class="line">    #这里 system 段地址起始地址为 0x1000 结束地址为 0x4000</span><br><span class="line">    #也就是说，system 的大小为 起始内存为 0x10000  结束内存为 0x40000</span><br><span class="line">    #即 192 KB 的空间，后面编译的时候验证</span><br></pre></td></tr></table></figure>
+
+<p>最后查看<code>read_track </code>例程，这也是真正读取扇区到内存中的部分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">read_track:</span><br><span class="line">    pusha			; push all</span><br><span class="line">    pusha</span><br><span class="line">    mov	ax, #0xe2e 	! loading... message 2e &#x3D; .</span><br><span class="line">    mov	bx, #7</span><br><span class="line">    int	0x10</span><br><span class="line">    popa</span><br><span class="line">    </span><br><span class="line">    mov dx,track</span><br><span class="line">    mov cx,sread</span><br><span class="line">    inc cx</span><br><span class="line">    mov ch,dl</span><br><span class="line">    mov dx,head</span><br><span class="line">    mov dh,dl</span><br><span class="line">    and dx,#0x0100 </span><br><span class="line">    mov ah,#2</span><br><span class="line"></span><br><span class="line">    push	dx      ! save for error dump</span><br><span class="line">    push	cx      </span><br><span class="line">    push	bx</span><br><span class="line">    push	ax</span><br><span class="line"></span><br><span class="line">    int 0x13</span><br><span class="line">    jc bad_rt</span><br><span class="line">    add	sp, #8      </span><br><span class="line">    popa</span><br><span class="line">    ret</span><br><span class="line">    </span><br><span class="line">    #首先调用 0x10 中断打印一串提示信息</span><br><span class="line">    #从标号 track 获取当前磁道号</span><br><span class="line">    #从标号 sread 获取已读扇区号 + 1 作为起始扇区</span><br><span class="line">    #从标号 head 获取当前磁头号</span><br><span class="line">    #调用 0x13 中断读取扇区</span><br><span class="line">    #注意 AL 扇区数来自 ok1_read 例程的计算</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">bad_rt:</span><br><span class="line">    push	ax          ! save error code</span><br><span class="line">    call	print_all   ! ah &#x3D; error, al &#x3D; read</span><br><span class="line"></span><br><span class="line">    xor ah,ah</span><br><span class="line">    xor dl,dl</span><br><span class="line">    int 0x13</span><br><span class="line"></span><br><span class="line">    add	sp, #10</span><br><span class="line">    popa</span><br><span class="line">    jmp read_track</span><br><span class="line">    </span><br><span class="line">    #bad_rt 例程作为处理读取错误的情况存在</span><br><span class="line">    #调用 print_all 打印之前保存在栈中的相关寄存器</span><br><span class="line">    #并且 重置 软盘的磁盘操作系统，从栈中恢复在读取扇区之前的寄存器参数，调用 read_track 重新读取扇区</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这段代码真的读的我难受。</p>
+<p>在磁头号、磁道号、扇区号的处理中参数太多，很容易理不清。</p>
+<p>以上代码请配合 <code>13h</code>和<code>10h</code>中断的功能表进行参考，相关参数并未做说明。</p>
+</blockquote>
+<p>读取<code>system</code>模块到内存之后，调用<code>kill_motor</code>例程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">kill_motor:</span><br><span class="line">    push dx</span><br><span class="line">    mov dx,#0x3f2</span><br><span class="line">    xor al, al</span><br><span class="line">    outb</span><br><span class="line">    pop dx</span><br><span class="line">    ret</span><br><span class="line">    </span><br><span class="line">    #0x3f2 是软盘控制器的只写端口号</span><br><span class="line">    #AL &#x3D;0x00 </span><br><span class="line">    #软盘驱动器A </span><br><span class="line">    #复位FDC </span><br><span class="line">    #禁止DMA和中断请求</span><br><span class="line">    #关闭软驱A的马达</span><br></pre></td></tr></table></figure>
+
+<p>最后<code>print_nl</code>例程进行回车换行。</p>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://mirror.math.princeton.edu/pub/oldlinux/download/fd-pro.pdf">软盘控制器的编程方法</a> </p>
+<h2 id="检查根文件系统设备"><a href="#检查根文件系统设备" class="headerlink" title="检查根文件系统设备"></a>检查根文件系统设备</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">ROOT_DEV &#x3D; 0</span><br><span class="line">SWAP_DEV &#x3D; 0</span><br><span class="line"></span><br><span class="line">	seg cs</span><br><span class="line">    mov	ax,root_dev</span><br><span class="line">    or	ax,ax</span><br><span class="line">    jne	root_defined</span><br><span class="line">    seg cs              ; 取出sectors的值(每磁道扇区数)</span><br><span class="line">    mov	bx,sectors      </span><br><span class="line">    mov	ax,#0x0208      ! &#x2F;dev&#x2F;PS0 - 1.2Mb</span><br><span class="line">    cmp	bx,#15          ; sectors&#x3D;15则说明是1.2MB的软驱</span><br><span class="line">    je	root_defined</span><br><span class="line">    mov	ax,#0x021c      ! &#x2F;dev&#x2F;PS0 - 1.44Mb</span><br><span class="line">    cmp	bx,#18          ; sectors&#x3D;18则说明是1.44MB的软驱</span><br><span class="line">    je	root_defined</span><br><span class="line">undef_root:</span><br><span class="line">    jmp undef_root</span><br><span class="line">root_defined:</span><br><span class="line">    seg cs</span><br><span class="line">    mov	root_dev,ax</span><br><span class="line">    jmpi	0,SETUPSEG</span><br><span class="line">    </span><br><span class="line">    #如果 root_dev 为不为0 则 jmp 至 root_defined</span><br><span class="line">    #如果 root_dev 为0 则取出 标号 sectors （每磁道的扇区数量）处的值</span><br><span class="line">    #如果该值为 15 则设置逻辑设备号为 0x0208</span><br><span class="line">    #如果该值为 18 则设置逻辑设备号为 0x021c </span><br><span class="line">    #最后将AX（即逻辑设备号）的值回填到标号 root_dev 处</span><br><span class="line">    #最后jmp 至 SETUPSEG:0x0000</span><br><span class="line">    #SETUPSEG 值为0x9020 ,即 jmp 0x90200</span><br><span class="line">    #也就是setup 加载的位置</span><br><span class="line">    </span><br><span class="line">    #如果没有更改的话，这个的值为 默认 0x301 代表第一个硬盘的第一个分区</span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>ROOT_DEV</code>由<code>tools</code>下的build 程序 写入，来看看具体是如何写入的。</p>
+<p>看了 Makefile 执行的命令如下：</p>
+<p><img src="https://data-1256314339.file.myqcloud.com/image/Makefile%20%E6%89%A7%E8%A1%8C%E7%9A%84%E5%91%BD%E4%BB%A4.png"></p>
+<p>看了下源码，C 还不太熟，调试了了下：</p>
+<p><img src="https://data-1256314339.file.myqcloud.com/image/main_argc%E4%BB%8E%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%8E%A5%E6%94%B6%E7%9A%84%E5%8F%82%E6%95%B0%E4%B8%AA%E6%95%B0.png"></p>
+<p><code>argc</code>=4 也就是说：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEFAULT_MAJOR_ROOT 3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEFAULT_MINOR_ROOT 1<span class="comment">//6	</span></span></span><br><span class="line"><span class="keyword">if</span> (argc &gt; <span class="number">4</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">strcmp</span>(argv[<span class="number">4</span>], <span class="string">&quot;FLOPPY&quot;</span>)) &#123;</span><br><span class="line">			<span class="keyword">if</span> (stat(argv[<span class="number">4</span>], &amp;sb)) &#123;</span><br><span class="line">				perror(argv[<span class="number">4</span>]);</span><br><span class="line">				die(<span class="string">&quot;Couldn&#x27;t stat root device.&quot;</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			major_root = MAJOR(sb.st_rdev);	<span class="comment">/* 取设备名状态结构中设备号 */</span></span><br><span class="line">			minor_root = MINOR(sb.st_rdev);</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			major_root = <span class="number">0</span>;</span><br><span class="line">			minor_root = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	<span class="comment">/* 若argc=4，则取系统默认的根设备号 */</span></span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		major_root = DEFAULT_MAJOR_ROOT;</span><br><span class="line">		minor_root = DEFAULT_MINOR_ROOT;</span><br><span class="line">	&#125;</span><br><span class="line"> 	<span class="comment">//如果argc=4，则 major_root =3  minor_root = 1</span></span><br><span class="line">	....</span><br><span class="line">    buf[<span class="number">508</span>] = (<span class="keyword">char</span>) minor_root;</span><br><span class="line">    buf[<span class="number">509</span>] = (<span class="keyword">char</span>) major_root;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://data-1256314339.file.myqcloud.com/image/Linux0.12%E7%9A%84%E6%A0%B9%E6%96%87%E4%BB%B6%E8%AE%BE%E5%A4%87%E4%B8%BB%E8%AE%BE%E5%A4%87%E5%8F%B7%E5%92%8C%E6%AC%A1%E8%AE%BE%E5%A4%87%E5%8F%B7.png"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">objdump -m i8086 -b binary -D Image --stop-address 0x200</span><br><span class="line">xxd -g 1 -seek 508 -l 2  Image </span><br></pre></td></tr></table></figure>
+
+<p>而偏移 508 和 509 处在 <code>bootsect</code>中是预留好的:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">.org 506</span><br><span class="line">swap_dev:</span><br><span class="line">    .word SWAP_DEV</span><br><span class="line">root_dev:</span><br><span class="line">    .word ROOT_DEV</span><br><span class="line"></span><br><span class="line">boot_flag:</span><br><span class="line">    .word 0xAA55a</span><br></pre></td></tr></table></figure>
+
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>512 字节<code>bootsect</code>被安排的非常清楚，没有一个字节是多余的。</p>
+<p>这段程序我一开始我以为我会读的非常容易。</p>
+<p>直到读到了 “读取 system 模块”部分，这部分参数太多，看着脑子乱，发现看不进去，看的恶心。</p>
+<p>进而这几天都在摸鱼想这个（说明好的代码可读性的重要性）。</p>
+<p>今天为什么能读下来了？我觉得原因有几个：</p>
+<ul>
+<li><p>不要过分关注一些硬件细节。比如 “读取 system 模块”也就在这里用下，大致知道他的用途即可，能看懂就看懂，看不懂也没关系。</p>
+<blockquote>
+<p>我在看《一个64位操作系统的实现》时，也是被作者开篇的文件系统给恶心到了，起始认真看下去即可，指示概念太多，一下子缓不过来。</p>
+</blockquote>
+</li>
+<li><p>参考了更多的书籍。《LInux  内核 完全注释》中已经给出了很详细的说明，《Linux内核设计的艺术》中这部分也没有做更多的介绍。</p>
+</li>
+</ul>
+<p>即使已经读完这部分代码，我仍然对扇区部分有点迷糊，我找到一篇比较好的博客，有兴趣的可以参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/longintchar/article/details/106912096">该部分</a>。</p>
+<p><strong>参考</strong></p>
+<p>x86汇编语言：从实模式到保护模式——p33</p>
+<!-- flag of hidden posts -->
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E7%AF%87%E7%9A%84%E5%BA%9F%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">开篇的废话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bootsect-S-%E6%BA%90%E7%A0%81"><span class="toc-number">2.</span> <span class="toc-text">bootsect.S 源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96setup%E6%A8%A1%E5%9D%97"><span class="toc-number">3.</span> <span class="toc-text">读取setup模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96system%E6%A8%A1%E5%9D%97"><span class="toc-number">4.</span> <span class="toc-text">读取system模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E8%AE%BE%E5%A4%87"><span class="toc-number">5.</span> <span class="toc-text">检查根文件系统设备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">小结</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://wuhash.com/p/51cc34db.html"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://wuhash.com/p/51cc34db.html&text=bootsect"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://wuhash.com/p/51cc34db.html&is_video=false&description=bootsect"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=bootsect&body=Check out this article: http://wuhash.com/p/51cc34db.html"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://wuhash.com/p/51cc34db.html&title=bootsect"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://wuhash.com/p/51cc34db.html&name=bootsect&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://wuhash.com/p/51cc34db.html&t=bootsect"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    伍默
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0bb641a53e8b4867bcd35363aa4eab9b"}'></script>
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
